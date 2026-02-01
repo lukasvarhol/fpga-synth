@@ -62,6 +62,10 @@ The current focus is on **wavetable synthesis**, **numerically controlled oscill
 │
 ├─ notebooks/
 │   └─ nco.ipynb              # NCO derivation and testing
+├─ fpga/
+│   └─ ips                    # Packaged IP cores
+│   └─ src                    # HDL files
+│   └─ vivado_project.tcl     # TCL script which generate vivado project folder
 │
 └─ README.md
 ```
@@ -107,6 +111,8 @@ Longer-term:
 ## Status
 
 Core DSP concepts are implemented and behaving correctly in software. The project is transitioning from exploratory prototyping toward hardware-oriented design decisions.
+
+HDL is being written for the NCO.
 
 ---
 
