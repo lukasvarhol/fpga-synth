@@ -19,6 +19,7 @@ proc checkRequiredFiles { origin_dir} {
   set status true
   set files [list \
  "[file normalize "$origin_dir/src/phase_accumulator.sv"]"\
+ "[file normalize "$origin_dir/src/sample_rate_tick_driver.sv"]"\
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -157,11 +158,17 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 set obj [get_filesets sources_1]
 set files [list \
  [file normalize "${origin_dir}/src/phase_accumulator.sv"] \
+ [file normalize "${origin_dir}/src/sample_rate_tick_driver.sv"] \
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sources_1' fileset file properties for remote files
 set file "$origin_dir/src/phase_accumulator.sv"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
+
+set file "$origin_dir/src/sample_rate_tick_driver.sv"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
