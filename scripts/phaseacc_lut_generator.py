@@ -1,10 +1,8 @@
 from pathlib import Path
 import numpy as np
 
-# Path to THIS script
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Project layout
 LUT_DIR = SCRIPT_DIR.parent / "fpga" / "luts"
 LUT_DIR.mkdir(exist_ok=True)
 
