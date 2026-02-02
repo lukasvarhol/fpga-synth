@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
 module sample_rate_tick_driver #(
-    parameter int CLK_FREQ = 100000000,    // Clock frequency : 100MHz
-    parameter int FS = 48000               // Sample frequency: 48kHz
+    parameter int CLK_FREQ = 12_000_000,    // Clock frequency : 12MHz
+    parameter int FS = 48_000               // Sample frequency: 48kHz
     )(
         input   logic      clk, n_rst,
         output  logic      tick
