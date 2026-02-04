@@ -10,11 +10,13 @@ LUT_DIR.mkdir(exist_ok=True)
 outfile = LUT_DIR / "wavetable_lut.hex"
 
 MIDI_RANGE = 128
-NOTES_PER_BAND = 4
+NOTES_PER_BAND = 6
 BANDS = np.int16(math.ceil((MIDI_RANGE/NOTES_PER_BAND)))
-AMP_BITS = 15
 N_LUT = 10
 FS = 48_000
+AUDIO_BITS = 24
+AMP_BITS = AUDIO_BITS-1
+
 K_maximums = np.zeros(BANDS, dtype=np.int32)
 
 notes = np.arange(MIDI_RANGE)
@@ -37,7 +39,9 @@ def generate_square_lut(BANDS, K_maximums, N_LUT, AMP_BITS):
 
         x = np.sum(coeffs[:, None] * np.sin(ks[:, None] * theta[None, :]), axis=0)
         x /= np.max(np.abs(x))
-        x *= (1<<AMP_BITS)
+        fullscale = (1 << AMP_BITS) - 1
+        x *= fullscale
+        x = np.round(x)
         luts.append(np.int32(x))
     return luts
 
@@ -54,7 +58,9 @@ def generate_saw_lut(BANDS, K_maximums, N_LUT, AMP_BITS):
 
         x = np.sum(coeffs[:, None] * np.sin(ks[:, None] * theta[None, :]), axis=0)
         x /= np.max(np.abs(x))
-        x *= (1<<AMP_BITS)
+        fullscale = (1 << AMP_BITS) - 1
+        x *= fullscale
+        x = np.round(x)
         luts.append(np.int32(x))
     return luts
 
@@ -72,7 +78,9 @@ def generate_triangle_lut(BANDS, K_maximums, N_LUT, AMP_BITS):
 
         x = np.sum(coeffs[:, None] * np.sin(ks[:, None] * theta[None, :]), axis=0)
         x /= np.max(np.abs(x))
-        x *= (1<<AMP_BITS)
+        fullscale = (1 << AMP_BITS) - 1
+        x *= fullscale
+        x = np.round(x)
         luts.append(np.int32(x))
     return luts
 
@@ -80,14 +88,16 @@ def generate_sin_lut(N_LUT, AMP_BITS):
     N = 1 << N_LUT
     x = np.round(
         np.sin(2 * np.pi * np.arange(N) / N)
-        * (1 << AMP_BITS)
     ).astype(np.int32)
+    fullscale = (1 << AMP_BITS) - 1
+    x *= fullscale
+    x = np.round(x)
     return x
 
 from pathlib import Path
 
 def write_luts_to_hex(luts, out_path, mode="w"):
-    width_bits = 32
+    width_bits = AUDIO_BITS
     out_path = Path(out_path)
     mask = (1 << width_bits) - 1
     hex_digits = (width_bits + 3) // 4
