@@ -14,6 +14,6 @@ module phase_accumulator #(
         if (~n_rst) 
             phase_o <= '0;
         else if (enable) 
-            phase_o <= phase_o + phase_i;      
+            phase_o <= phase_o + phase_i;  // Phase will automatically wrap    
     end
 endmodule
