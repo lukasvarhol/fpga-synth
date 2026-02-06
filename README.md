@@ -62,6 +62,7 @@ The current focus is on **wavetable synthesis**, **numerically controlled oscill
 │
 ├─ notebooks/
 │   └─ nco.ipynb              # NCO derivation and testing
+├─ scripts/                   # python scripts for generating tables   
 ├─ fpga/
 │   └─ ips                    # Packaged IP cores
 │   └─ src                    # HDL files
