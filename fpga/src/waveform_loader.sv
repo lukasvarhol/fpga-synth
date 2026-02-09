@@ -13,12 +13,12 @@ module waveform_loader #(
     parameter string FILE    = "wavetable_lut.hex"
     )(
         input   logic                 clk,
-        input   logic [$clog2(NUM_WAVFRM)-1:0]  waveform_select,
+        input   logic [$clog2(NUM_WAVES)-1:0]  waveform_select,
         input   logic [N_LUT-1:0] phase_idx,
         input   logic [$clog2(NUM_BANDS-1):0] band,
         
         output  logic [DATA_W-1:0]    data
-    )
+    );
 
     // [0 ... (1024*22)-1]              SQUARE
     // [1024*22 ... 2(1024*22)-1]       SAW
