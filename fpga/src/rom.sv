@@ -5,10 +5,10 @@ module rom #(
     parameter int DATA_W = 32 ,       // 32 bit values
     parameter string FILE = "phaseacc.hex" // Look-up Table file
     )(
-        input   logic                 clk,
-        input   logic [ADDR_W-1:0]    addr,
+        input   logic                 clk_i,
+        input   logic [ADDR_W-1:0]    addr_i,
         
-        output  logic [DATA_W-1:0]    data
+        output  logic [DATA_W-1:0]    data_o
     );
 
     (* ram_style = "distributed" *)
@@ -18,7 +18,7 @@ module rom #(
     $readmemh(FILE, rom);
   end
 
-  always_ff @(posedge clk) begin
-    data <= rom[addr];
+  always_ff @(posedge clk_i) begin
+    data_o <= rom[addr_i];
   end
 endmodule

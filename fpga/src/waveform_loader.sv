@@ -1,21 +1,21 @@
 `timescale 1ns / 1ps
 
 module waveform_loader #(
-    parameter int N_LUT      = 10,                     // address bits per table
+    parameter int LUT_BITS   = 10,                     // address bits per table
     parameter int LUT_LEN    = (1 << N_LUT),           // samples per table
     parameter int DATA_W     = 24,
     parameter int NUM_WAVES  = 4,
     parameter int NUM_BANDS  = 22,
-    
+
     // 3 band-limited waves + 1 sine table:
     parameter int NUM_TABLES = ((NUM_WAVES - 1) * NUM_BANDS) + 1,
     parameter int DEPTH      = NUM_TABLES * LUT_LEN,
     parameter string FILE    = "wavetable_lut.hex"
     )(
-        input   logic                 clk,
-        input   logic [$clog2(NUM_WAVES)-1:0]  waveform_select,
-        input   logic [N_LUT-1:0] phase_idx,
-        input   logic [$clog2(NUM_BANDS-1):0] band,
+        input   logic                 clk_i,
+        input   logic [$clog2(NUM_WAVES)-1:0]  waveform_select_i,
+        input   logic [LUT_BITS-1:0] phase_i,
+        input   logic [$clog2(NUM_BANDS-1):0] band_o,
         
         output  logic [DATA_W-1:0]    data
     );
@@ -37,15 +37,15 @@ module waveform_loader #(
     logic signed [DATA_W-1:0] rom [0:DEPTH-1];
 
     always_comb begin
-        case (waveform_select)
-            2'd0: addr = SQUARE_BASE + (band * LUT_LEN) + phase_idx;
-            2'd1: addr = SAW_BASE + (band * LUT_LEN) + phase_idx;
-            2'd2: addr = TRIANGLE_BASE + (band * LUT_LEN) + phase_idx;
-            default: addr = SINE_BASE + phase_idx;
+        case (waveform_select_i)
+            2'd0: addr = SQUARE_BASE + (band_o * LUT_LEN) + phase_i;
+            2'd1: addr = SAW_BASE + (band_o * LUT_LEN) + phase_i;
+            2'd2: addr = TRIANGLE_BASE + (band_o * LUT_LEN) + phase_i;
+            default: addr = SINE_BASE + phase_i;
         endcase
     end
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk_i) begin
         data <= rom[addr];
     end
 
