@@ -20,6 +20,10 @@ proc checkRequiredFiles { origin_dir} {
   set files [list \
  "[file normalize "$origin_dir/src/phase_accumulator.sv"]"\
  "[file normalize "$origin_dir/src/sample_rate_tick_driver.sv"]"\
+ "[file normalize "$origin_dir/src/waveform_loader.sv"]"\
+ "[file normalize "$origin_dir/src/rom.sv"]"\
+ "[file normalize "$origin_dir/src/nco.v"]"\
+ "[file normalize "$origin_dir/src/band_selector.sv"]"\
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -159,6 +163,10 @@ set obj [get_filesets sources_1]
 set files [list \
  [file normalize "${origin_dir}/src/phase_accumulator.sv"] \
  [file normalize "${origin_dir}/src/sample_rate_tick_driver.sv"] \
+ [file normalize "${origin_dir}/src/waveform_loader.sv"] \
+ [file normalize "${origin_dir}/src/rom.sv"] \
+ [file normalize "${origin_dir}/src/nco.v"] \
+ [file normalize "${origin_dir}/src/band_selector.sv"] \
 ]
 add_files -norecurse -fileset $obj $files
 
@@ -173,6 +181,21 @@ set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 
+set file "$origin_dir/src/waveform_loader.sv"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
+
+set file "$origin_dir/src/rom.sv"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
+
+set file "$origin_dir/src/band_selector.sv"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
+
 
 # Set 'sources_1' fileset file properties for local files
 # None
@@ -181,6 +204,7 @@ set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 set obj [get_filesets sources_1]
 set_property -name "dataflow_viewer_settings" -value "min_width=16" -objects $obj
 set_property -name "top" -value "phase_accumulator" -objects $obj
+set_property -name "top_auto_set" -value "0" -objects $obj
 
 # Create 'constrs_1' fileset (if not found)
 if {[string equal [get_filesets -quiet constrs_1] ""]} {
@@ -208,6 +232,7 @@ set obj [get_filesets sim_1]
 set obj [get_filesets sim_1]
 set_property -name "sim_wrapper_top" -value "1" -objects $obj
 set_property -name "top" -value "phase_accumulator" -objects $obj
+set_property -name "top_auto_set" -value "0" -objects $obj
 set_property -name "top_lib" -value "xil_defaultlib" -objects $obj
 
 # Set 'utils_1' fileset object
@@ -216,6 +241,197 @@ set obj [get_filesets utils_1]
 
 # Set 'utils_1' fileset properties
 set obj [get_filesets utils_1]
+
+
+# Adding sources referenced in BDs, if not already added
+if { [get_files band_selector.sv] == "" } {
+  import_files -quiet -fileset sources_1 "$origin_dir/src/band_selector.sv"
+}
+if { [get_files phase_accumulator.sv] == "" } {
+  import_files -quiet -fileset sources_1 "$origin_dir/src/phase_accumulator.sv"
+}
+if { [get_files rom.sv] == "" } {
+  import_files -quiet -fileset sources_1 "$origin_dir/src/rom.sv"
+}
+if { [get_files sample_rate_tick_driver.sv] == "" } {
+  import_files -quiet -fileset sources_1 "$origin_dir/src/sample_rate_tick_driver.sv"
+}
+if { [get_files waveform_loader.sv] == "" } {
+  import_files -quiet -fileset sources_1 "$origin_dir/src/waveform_loader.sv"
+}
+if { [get_files nco.v] == "" } {
+  import_files -quiet -fileset sources_1 "$origin_dir/src/nco.v"
+}
+
+
+# Proc to create BD design_1
+proc cr_bd_design_1 { parentCell } {
+# The design that will be created by this Tcl proc contains the following 
+# module references:
+# nco
+
+
+
+  # CHANGE DESIGN NAME HERE
+  set design_name design_1
+
+  common::send_gid_msg -ssname BD::TCL -id 2010 -severity "INFO" "Currently there is no design <$design_name> in project, so creating one..."
+
+  create_bd_design $design_name
+
+  set bCheckIPsPassed 1
+  ##################################################################
+  # CHECK IPs
+  ##################################################################
+  set bCheckIPs 1
+  if { $bCheckIPs == 1 } {
+     set list_check_ips "\ 
+  xilinx.com:ip:clk_wiz:6.0\
+  "
+
+   set list_ips_missing ""
+   common::send_gid_msg -ssname BD::TCL -id 2011 -severity "INFO" "Checking if the following IPs exist in the project's IP catalog: $list_check_ips ."
+
+   foreach ip_vlnv $list_check_ips {
+      set ip_obj [get_ipdefs -all $ip_vlnv]
+      if { $ip_obj eq "" } {
+         lappend list_ips_missing $ip_vlnv
+      }
+   }
+
+   if { $list_ips_missing ne "" } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2012 -severity "ERROR" "The following IPs are not found in the IP Catalog:\n  $list_ips_missing\n\nResolution: Please add the repository containing the IP(s) to the project." }
+      set bCheckIPsPassed 0
+   }
+
+  }
+
+  ##################################################################
+  # CHECK Modules
+  ##################################################################
+  set bCheckModules 1
+  if { $bCheckModules == 1 } {
+     set list_check_mods "\ 
+  nco\
+  "
+
+   set list_mods_missing ""
+   common::send_gid_msg -ssname BD::TCL -id 2020 -severity "INFO" "Checking if the following modules exist in the project's sources: $list_check_mods ."
+
+   foreach mod_vlnv $list_check_mods {
+      if { [can_resolve_reference $mod_vlnv] == 0 } {
+         lappend list_mods_missing $mod_vlnv
+      }
+   }
+
+   if { $list_mods_missing ne "" } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2021 -severity "ERROR" "The following module(s) are not found in the project: $list_mods_missing" }
+      common::send_gid_msg -ssname BD::TCL -id 2022 -severity "INFO" "Please add source files for the missing module(s) above."
+      set bCheckIPsPassed 0
+   }
+}
+
+  if { $bCheckIPsPassed != 1 } {
+    common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
+    return 3
+  }
+
+  variable script_folder
+
+  if { $parentCell eq "" } {
+     set parentCell [get_bd_cells /]
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+
+  # Create interface ports
+
+  # Create ports
+  set sys_clock [ create_bd_port -dir I -type clk -freq_hz 12000000 sys_clock ]
+  set_property -dict [ list \
+   CONFIG.PHASE {0.0} \
+ ] $sys_clock
+  set n_rst_i_0 [ create_bd_port -dir I n_rst_i_0 ]
+  set midi_note_i_0 [ create_bd_port -dir I -from 6 -to 0 midi_note_i_0 ]
+
+  # Create instance: nco_0, and set properties
+  set block_name nco
+  set block_cell_name nco_0
+  if { [catch {set nco_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $nco_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: clk_wiz_0, and set properties
+  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0 ]
+  set_property -dict [list \
+    CONFIG.CLKOUT1_JITTER {684.720} \
+    CONFIG.CLKOUT1_PHASE_ERROR {668.310} \
+    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {12.000} \
+    CONFIG.CLK_IN1_BOARD_INTERFACE {sys_clock} \
+    CONFIG.MMCM_CLKFBOUT_MULT_F {62.500} \
+    CONFIG.MMCM_CLKOUT0_DIVIDE_F {62.500} \
+    CONFIG.MMCM_DIVCLK_DIVIDE {1} \
+    CONFIG.RESET_PORT {resetn} \
+    CONFIG.RESET_TYPE {ACTIVE_LOW} \
+    CONFIG.USE_BOARD_FLOW {true} \
+    CONFIG.USE_LOCKED {false} \
+  ] $clk_wiz_0
+
+
+  # Create port connections
+  connect_bd_net -net clk_wiz_0_clk_out1  [get_bd_pins clk_wiz_0/clk_out1] \
+  [get_bd_pins nco_0/clk_i]
+  connect_bd_net -net midi_note_i_0_1  [get_bd_ports midi_note_i_0] \
+  [get_bd_pins nco_0/midi_note_i]
+  connect_bd_net -net n_rst_i_0_1  [get_bd_ports n_rst_i_0] \
+  [get_bd_pins nco_0/n_rst_i] \
+  [get_bd_pins clk_wiz_0/resetn]
+  connect_bd_net -net sys_clock_1  [get_bd_ports sys_clock] \
+  [get_bd_pins clk_wiz_0/clk_in1]
+
+  # Create address segments
+
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+
+  save_bd_design
+common::send_gid_msg -ssname BD::TCL -id 2050 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
+
+  close_bd_design $design_name 
+}
+# End of cr_bd_design_1()
+
+cr_bd_design_1 ""
+set_property REGISTERED_WITH_MANAGER "1" [get_files design_1.bd ] 
+set_property SYNTH_CHECKPOINT_MODE "Hierarchical" [get_files design_1.bd ] 
+
+
+# Create wrapper file for design_1.bd
+make_wrapper -files [get_files design_1.bd] -import -top
 
 set idrFlowPropertiesConstraints ""
 catch {

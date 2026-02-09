@@ -8,8 +8,9 @@ module nco #(
         parameter NUM_BANDS = 22,
         parameter NOTES_PER_BAND = 6,
         parameter NUM_WAVES = 4,
+        parameter NUM_TABLES = ((NUM_WAVES - 1) * NUM_BANDS) + 1,
         parameter LUT_BITS = 10,
-        parameter AUDIO_BITS = 24,
+        parameter AUDIO_BITS = 24
     )
     (
         input wire clk_i, n_rst_i,
@@ -21,7 +22,7 @@ module nco #(
     reg [WORD_BITS-1:0] phase_accumulation;
     reg [WORD_BITS-1:0] phase_value;
 
-    reg [$clog2[NUM_BANDS]-1:0] band;
+    reg [$clog2(NUM_BANDS)-1:0] band;
     wire tick;
 
     sample_rate_tick_driver #(
@@ -31,17 +32,17 @@ module nco #(
         .clk_i(clk_i),
         .n_rst_i(n_rst_i),
         .tick_o(tick)
-    )
+    );
 
     rom #(
         .ADDR_W(MIDI_BITS),         
         .DATA_W(WORD_BITS),     
         .FILE("phaseacc.hex") 
     ) phase_values_rom (
-        clk_i(clk_i),
-        addr_i(midi_note),
-        data_o(phase_value),
-    )
+        .clk_i(clk_i),
+        .addr_i(midi_note),
+        .data_o(phase_value)
+    );
 
     phase_accumulator #(
         .WORD_BITS(WORD_BITS)
@@ -68,16 +69,16 @@ module nco #(
         .DATA_W(AUDIO_BITS),
         .NUM_WAVES(NUM_WAVES),
         .NUM_BANDS(NUM_BANDS),
-        .NUM_TABLES(((NUM_WAVES - 1) * NUM_BANDS) + 1),
+        .NUM_TABLES(NUM_TABLES),
         .DEPTH(NUM_TABLES * (1 << LUT_BITS)),
         .FILE("wavetable_lut.hex")
-    ) u_waveform_loader #(
+    ) u_waveform_loader (
         .clk_i(clk_i),
         .waveform_select_i(),
         .phase_i(phase_accumulation[WORD_BITS-1:(WORD_BITS-LUT_BITS)]),
         .band_i(band),
         .data_o(audio_o)
-    )
+    );
 
     // TODO: 
     // - fractional lerp with remaining phase_accumulation bits

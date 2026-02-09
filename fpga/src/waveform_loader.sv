@@ -2,7 +2,7 @@
 
 module waveform_loader #(
     parameter int LUT_BITS   = 10,                     // address bits per table
-    parameter int LUT_LEN    = (1 << N_LUT),           // samples per table
+    parameter int LUT_LEN    = (1 << LUT_BITS),           // samples per table
     parameter int DATA_W     = 24,
     parameter int NUM_WAVES  = 4,
     parameter int NUM_BANDS  = 22,
