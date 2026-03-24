@@ -15,7 +15,7 @@ module sample_rate_tick_driver #(
             tick_o <= '0;
             counter <= '0;
             end
-        else 
+        else
             if (counter + FS >= CLK_FREQ) begin
                 tick_o <= '1;
                 counter  <= counter + FS - CLK_FREQ;
@@ -23,7 +23,8 @@ module sample_rate_tick_driver #(
             else begin
                 tick_o <= '0;
                 counter <= counter + FS;
-                end 
+                end
     end
 
 endmodule
+// sample_rate_tick_driver

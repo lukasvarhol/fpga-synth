@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
 module band_selector #(
-    parameter byte NUM_BANDS = 22,
-    parameter byte MIDI_BITS = 7,
-    parameter byte NOTES_PER_BAND = 6
+    parameter int NUM_BANDS = 22,
+    parameter int MIDI_BITS = 7,
+    parameter int NOTES_PER_BAND = 6
     )
     (
         input logic [MIDI_BITS-1:0] note_i,

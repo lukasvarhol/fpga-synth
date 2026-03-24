@@ -1,0 +1,8 @@
+.DS_STORE
+
+# Emacs files
+*~
+#*#
+.#*
+
+fpga/vivado_project/*

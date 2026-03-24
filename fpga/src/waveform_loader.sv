@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
 module waveform_loader #(
-    parameter int LUT_BITS   = 10,                     // address bits per table
-    parameter int LUT_LEN    = (1 << LUT_BITS),           // samples per table
+    parameter int LUT_BITS   = 10,                // address bits per table
+    parameter int LUT_LEN    = (1 << LUT_BITS),   // samples per table
     parameter int DATA_W     = 24,
     parameter int NUM_WAVES  = 4,
     parameter int NUM_BANDS  = 22,
@@ -12,12 +12,12 @@ module waveform_loader #(
     parameter int DEPTH      = NUM_TABLES * LUT_LEN,
     parameter string FILE    = "wavetable_lut.hex"
     )(
-        input   logic                 clk_i,
+        input   logic                          clk_i,
         input   logic [$clog2(NUM_WAVES)-1:0]  waveform_select_i,
-        input   logic [LUT_BITS-1:0] phase_i,
-        input   logic [$clog2(NUM_BANDS-1):0] band_o,
-        
-        output  logic [DATA_W-1:0]    data
+        input   logic [LUT_BITS-1:0]           phase_i,
+        input   logic [$clog2(NUM_BANDS-1):0]  band_o,
+
+        output  logic [DATA_W-1:0]             data
     );
 
     // [0 ... (1024*22)-1]              SQUARE
@@ -50,3 +50,4 @@ module waveform_loader #(
     end
 
 endmodule
+// waveform_loader
